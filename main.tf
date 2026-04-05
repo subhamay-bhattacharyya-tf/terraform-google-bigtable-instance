@@ -1,23 +1,38 @@
-# ============================================================================
-# GCS Bucket Module - Main
-# Creates and manages a Google Cloud Storage bucket.
-# ============================================================================
+# ==============================================================================
+# Bigtable Instance Module - Main
+# Creates and manages a Google Cloud Bigtable instance.
+# ==============================================================================
 
-resource "google_storage_bucket" "this" {
-  name                        = var.bucket_name
-  project                     = var.project_id
-  location                    = var.location
-  storage_class               = upper(var.storage_class)
-  force_destroy               = var.force_destroy
-  uniform_bucket_level_access = true
-  public_access_prevention    = "enforced"
+resource "google_bigtable_instance" "this" {
+  name                = local.instance_name
+  instance_type       = var.bigtable_config.instance_type
+  deletion_protection = var.bigtable_config.deletion_protection
+  labels              = var.bigtable_config.labels
 
-  labels = merge(var.labels, {
-    project     = var.project
-    environment = var.environment
-  })
+  dynamic "cluster" {
+    for_each = var.bigtable_config.cluster
+    content {
+      cluster_id   = cluster.value.cluster_id
+      zone         = cluster.value.zone
+      storage_type = cluster.value.storage_type
 
-  versioning {
-    enabled = var.versioning
+      # num_nodes is not applicable for DEVELOPMENT instances or when autoscaling is enabled
+      num_nodes = (
+        var.bigtable_config.instance_type == "DEVELOPMENT" ? null :
+        var.bigtable_config.autoscaling_config == null ? cluster.value.num_nodes : null
+      )
+
+      dynamic "autoscaling_config" {
+        for_each = (
+          var.bigtable_config.instance_type != "DEVELOPMENT" &&
+          var.bigtable_config.autoscaling_config != null
+        ) ? [var.bigtable_config.autoscaling_config] : []
+        content {
+          min_nodes  = autoscaling_config.value.min_nodes
+          max_nodes  = autoscaling_config.value.max_nodes
+          cpu_target = autoscaling_config.value.cpu_target
+        }
+      }
+    }
   }
 }

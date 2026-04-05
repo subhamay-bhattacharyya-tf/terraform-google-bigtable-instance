@@ -1,81 +1,188 @@
-# Terraform Module for GCS Bucket
+# terraform-google-bigtable-instance
 
-![Release](https://github.com/subhamay-bhattacharyya-tf/terraform-google-module-template/actions/workflows/ci.yaml/badge.svg)&nbsp;![GCP](https://img.shields.io/badge/GCP-4285F4?logo=googlecloud&logoColor=white)&nbsp;![Commit Activity](https://img.shields.io/github/commit-activity/t/subhamay-bhattacharyya-tf/terraform-google-module-template)&nbsp;![Last Commit](https://img.shields.io/github/last-commit/subhamay-bhattacharyya-tf/terraform-google-module-template)&nbsp;![Release Date](https://img.shields.io/github/release-date/subhamay-bhattacharyya-tf/terraform-google-module-template)&nbsp;![Repo Size](https://img.shields.io/github/repo-size/subhamay-bhattacharyya-tf/terraform-google-module-template)&nbsp;![File Count](https://img.shields.io/github/directory-file-count/subhamay-bhattacharyya-tf/terraform-google-module-template)&nbsp;![Issues](https://img.shields.io/github/issues/subhamay-bhattacharyya-tf/terraform-google-module-template)&nbsp;![Top Language](https://img.shields.io/github/languages/top/subhamay-bhattacharyya-tf/terraform-google-module-template)&nbsp;![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-623CE4?logo=anthropic&logoColor=white)&nbsp;![Custom Endpoint](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/bsubhamay/476e6e7583432e960e6de16d5223e6a3/raw/terraform-google-module-template.json?)
+![Release](https://github.com/subhamay-bhattacharyya-tf/terraform-google-bigtable-instance/actions/workflows/ci.yaml/badge.svg)&nbsp;![GCP](https://img.shields.io/badge/GCP-4285F4?logo=googlecloud&logoColor=white)&nbsp;![Commit Activity](https://img.shields.io/github/commit-activity/t/subhamay-bhattacharyya-tf/terraform-google-bigtable-instance)&nbsp;![Last Commit](https://img.shields.io/github/last-commit/subhamay-bhattacharyya-tf/terraform-google-bigtable-instance)&nbsp;![Release Date](https://img.shields.io/github/release-date/subhamay-bhattacharyya-tf/terraform-google-bigtable-instance)&nbsp;![Repo Size](https://img.shields.io/github/repo-size/subhamay-bhattacharyya-tf/terraform-google-bigtable-instance)&nbsp;![File Count](https://img.shields.io/github/directory-file-count/subhamay-bhattacharyya-tf/terraform-google-bigtable-instance)&nbsp;![Issues](https://img.shields.io/github/issues/subhamay-bhattacharyya-tf/terraform-google-bigtable-instance)&nbsp;![Top Language](https://img.shields.io/github/languages/top/subhamay-bhattacharyya-tf/terraform-google-bigtable-instance)&nbsp;![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-623CE4?logo=anthropic&logoColor=white)&nbsp;![Custom Endpoint](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/bsubhamay/476e6e7583432e960e6de16d5223e6a3/raw/terraform-google-bigtable-instance.json?)&nbsp;![Terraform Version](https://img.shields.io/badge/terraform-%3E%3D1.3-blue)&nbsp;![Provider Version](https://img.shields.io/badge/google-%3E%3D7.23-orange)
 
-A Terraform module for creating and managing a **Google Cloud Storage (GCS) bucket** on GCP.
+A Terraform module for provisioning a **Google Cloud Bigtable instance** on GCP.
+
+---
 
 ## Overview
 
-This module provisions a single `google_storage_bucket` resource via the `terraform-google-module-template` module. It accepts a small set of flat input variables and assembles the required `gcs_config` object, enforcing `uniform_bucket_level_access = true` and `public_access_prevention = "enforced"` by default.
+This module creates and manages a single `google_bigtable_instance` resource on GCP. It accepts a
+structured `bigtable_config` object for all instance configuration, supporting both PRODUCTION and
+DEVELOPMENT instance types, single or multi-cluster deployments, fixed node counts, and CPU-based
+autoscaling. All resource naming follows the convention `<project_code>-<base_name>-<region>-<environment>`.
 
-## Requirements
-
-| Requirement | Version |
-|---|---|
-| Terraform | >= 1.3.0 |
-| Google Provider | >= 7.23.0 |
+---
 
 ## Usage
 
 ```hcl
-module "gcs_bucket" {
-  source = "github.com/subhamay-bhattacharyya-tf/terraform-google-module-template"
+module "bigtable" {
+  source = "github.com/subhamay-bhattacharyya-tf/terraform-google-bigtable-instance"
 
-  bucket_name = "my-portfolio-bucket"
-  project_id  = "portfolio-site"
-  location    = "US"
-  environment = "prod"
+  environment  = "dev"
+  project_code = "prj15"
+  region       = "us-central1"
+
+  bigtable_config = {
+    base_name           = "myapp"
+    instance_type       = "PRODUCTION"
+    deletion_protection = false
+
+    cluster = [
+      {
+        cluster_id   = "prj15-myapp-c1"
+        zone         = "us-central1-a"
+        num_nodes    = 1
+        storage_type = "SSD"
+      }
+    ]
+
+    labels = {
+      env  = "dev"
+      team = "platform"
+    }
+  }
 }
 ```
 
-## Input Variables
+---
+
+## Requirements
+
+| Name      | Version   |
+|-----------|-----------|
+| terraform | >= 1.3.0  |
+| google    | >= 7.23.0 |
+
+**Additional prerequisites:**
+
+- GCP credentials with `bigtable.instances.create` and `bigtable.instances.delete` permissions
+- Workload Identity Federation configured for CI (see CI Setup section below)
+
+---
+
+## Inputs
+
+<!-- AUTO-GENERATED by terraform-docs — do not edit manually -->
 
 | Name | Description | Type | Default | Required |
-|---|---|---|---|---|
-| `bucket_name` | Name of the GCS bucket | `string` | — | yes |
-| `project_id` | GCP project ID | `string` | `"portfolio-site"` | no |
-| `region` | GCP region | `string` | `"us-central1"` | no |
-| `location` | GCS bucket location | `string` | `"US"` | no |
-| `storage_class` | Storage class | `string` | `"STANDARD"` | no |
-| `force_destroy` | Force-destroy bucket on destroy | `bool` | `false` | no |
-| `versioning` | Enable object versioning | `bool` | `false` | no |
-| `labels` | Additional labels | `map(string)` | `{}` | no |
-| `project` | Project label value | `string` | `"portfolio-site"` | no |
-| `environment` | Environment label value | `string` | `"dev"` | no |
+|------|-------------|------|---------|:--------:|
+| environment | Deployment environment. Must be one of: dev, test, prod. | `string` | n/a | **yes** |
+| project\_code | Short project identifier used in resource naming. | `string` | n/a | **yes** |
+| region | GCP region for the provider configuration. | `string` | `"us-central1"` | no |
+| bigtable\_config | Configuration object for the Google Bigtable instance. | `object({...})` | n/a | **yes** |
+
+### `bigtable_config` object
+
+| Attribute | Type | Default | Required | Notes |
+|-----------|------|---------|:--------:|-------|
+| `base_name` | `string` | n/a | **yes** | Lowercase alphanumeric and hyphens, max 30 chars |
+| `instance_type` | `string` | `"PRODUCTION"` | no | One of: `PRODUCTION`, `DEVELOPMENT` |
+| `deletion_protection` | `bool` | `true` | no | Set `false` for non-production |
+| `cluster` | `list(object)` | n/a | **yes** | At least one cluster required |
+| `cluster[].cluster_id` | `string` | n/a | **yes** | Unique cluster identifier |
+| `cluster[].zone` | `string` | n/a | **yes** | GCP zone (e.g. `us-central1-a`) |
+| `cluster[].num_nodes` | `number` | `1` | no | Ignored when autoscaling or DEVELOPMENT |
+| `cluster[].storage_type` | `string` | `"SSD"` | no | One of: `SSD`, `HDD` |
+| `autoscaling_config` | `object` | `null` | no | CPU-based autoscaling; only for PRODUCTION |
+| `autoscaling_config.min_nodes` | `number` | n/a | **yes** (if set) | Minimum node count |
+| `autoscaling_config.max_nodes` | `number` | n/a | **yes** (if set) | Maximum node count |
+| `autoscaling_config.cpu_target` | `number` | n/a | **yes** (if set) | Target CPU utilization (%) |
+| `labels` | `map(string)` | `{}` | no | GCP labels applied to the instance |
+
+---
 
 ## Outputs
 
+<!-- AUTO-GENERATED by terraform-docs — do not edit manually -->
+
 | Name | Description |
-|---|---|
-| `bucket_id` | The ID of the GCS bucket |
-| `bucket_name` | The name of the GCS bucket |
-| `bucket_project` | The project ID where the bucket is created |
-| `bucket_location` | The location of the GCS bucket |
-| `bucket_url` | The URL of the GCS bucket |
-| `bucket_self_link` | The self link of the GCS bucket resource |
-| `bucket_storage_class` | The storage class of the GCS bucket |
-| `bucket_force_destroy` | Whether force_destroy is enabled |
+|------|-------------|
+| instance\_id | The unique ID of the Bigtable instance |
+| instance\_name | The name of the Bigtable instance |
+| instance\_project | The project where the Bigtable instance was created |
+| instance\_type | The instance type (PRODUCTION or DEVELOPMENT) |
+| instance\_deletion\_protection | Whether deletion protection is enabled |
+
+---
+
+## Resources
+
+| Name | Type |
+|------|------|
+| [google_bigtable_instance.this](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/bigtable_instance) | resource |
+
+---
+
+## Examples
+
+> Each example is a standalone, runnable Terraform configuration stored in `examples/bigtable/<name>/`.
+
+| Example | Description |
+|---------|-------------|
+| [basic](examples/bigtable/basic/) | Minimal PRODUCTION instance, single SSD cluster, 1 node |
+| [with-autoscaling](examples/bigtable/with-autoscaling/) | PRODUCTION instance with CPU autoscaling (1–5 nodes) |
+| [multi-cluster](examples/bigtable/multi-cluster/) | PRODUCTION instance with two clusters across zones |
+| [deletion-protection](examples/bigtable/deletion-protection/) | PRODUCTION instance with deletion protection enabled |
+
+---
+
+## Notes & Caveats
+
+> **Destructive operation:** Destroying this module deletes the Bigtable instance and all its data.
+> Set `deletion_protection = true` to prevent accidental deletion in production.
+
+- `instance_type = "DEVELOPMENT"` instances do not support `num_nodes` or `autoscaling_config`. The
+  module handles this automatically by omitting those fields for DEVELOPMENT instances.
+- Multi-cluster replication requires all clusters to use the same `storage_type`.
+- `num_nodes` is ignored when `autoscaling_config` is set — autoscaling manages node counts instead.
+- Bigtable instance names must be globally unique within a project. The naming convention
+  `<project_code>-<base_name>-<region>-<environment>` is enforced via `locals.tf`.
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for full guidelines.
+
+```bash
+git clone git@github.com:subhamay-bhattacharyya-tf/terraform-google-bigtable-instance.git
+cd terraform-google-bigtable-instance
+terraform fmt -recursive
+terraform validate
+```
+
+1. Fork the repository and create a feature branch (`git checkout -b feat/my-feature`)
+2. Run `terraform fmt`, `terraform validate`
+3. Add or update tests under `test/` (Terratest)
+4. Open a pull request against `main` with a Conventional Commits message
+
+---
 
 ## CI / Workload Identity Federation Setup
 
-The Terratest job authenticates to GCP via [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation) (service account impersonation). If the job fails with `Permission 'iam.serviceAccounts.getAccessToken' denied`, grant the WIF pool principal the required IAM binding:
+The Terratest job authenticates to GCP via [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation). If the job fails with `Permission 'iam.serviceAccounts.getAccessToken' denied`, grant the WIF pool principal the required IAM binding:
 
 ```bash
 gcloud iam service-accounts add-iam-policy-binding \
-    "sa-17-cloud-storage@prj-17-cloud-storage-16748.iam.gserviceaccount.com" \
-    --project="prj-17-cloud-storage-16748" \
+    "sa-15-cloud-bigtable@prj-15-cloud-bigtable-16748.iam.gserviceaccount.com" \
+    --project="prj-15-cloud-bigtable-16748" \
     --role="roles/iam.workloadIdentityUser" \
-    --member="principalSet://iam.googleapis.com/projects/578842011545/locations/global/workloadIdentityPools/github-actions/attribute.repository/subhamay-bhattacharyya-tf/terraform-google-module-template"
+    --member="principalSet://iam.googleapis.com/projects/<project-number>/locations/global/workloadIdentityPools/github-actions/attribute.repository/subhamay-bhattacharyya-tf/terraform-google-bigtable-instance"
 ```
 
 The three repository variables required by the CI workflow are:
 
 | Variable | Description |
-| --- | --- |
+|----------|-------------|
 | `GCP_PROJECT_ID` | GCP project ID passed as `GOOGLE_CLOUD_PROJECT` to Terratest |
 | `GCP_WORKLOAD_IDENTITY_PROVIDER` | Full WIF provider resource name |
 | `GCP_SERVICE_ACCOUNT` | Service account email to impersonate |
 
+---
+
 ## License
 
-Apache 2.0 — see [LICENSE](LICENSE).
+MIT © 2026 Subhamay Bhattacharyya — see [LICENSE](LICENSE) for full terms.

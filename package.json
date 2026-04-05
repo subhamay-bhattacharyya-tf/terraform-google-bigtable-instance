@@ -1,36 +1,39 @@
 {
-    "name": "terraform-google-module-template",
-    "version": "0.0.0",
-    "description": "Terraform module for creating and managing a Google Cloud Storage bucket with Semantic Release support.",
-    "license": "MIT",
-    "scripts": {
-        "release": "semantic-release"
-    },
-    "devDependencies": {
-        "@semantic-release/changelog": "^6.0.1",
-        "@semantic-release/commit-analyzer": "^13.0.1",
-        "@semantic-release/git": "^10.0.1",
-        "@semantic-release/github": "^12.0.6",
-        "@semantic-release/release-notes-generator": "^14.1.0",
-        "conventional-changelog-conventionalcommits": "^9.3.0",
-        "semantic-release": "^25.0.3"
-    },
-    "directories": {
-        "example": "examples"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/subhamay-bhattacharyya-tf/terraform-google-module-template.git"
-    },
-    "keywords": [
-        "terraform",
-        "gcp",
-        "gcs",
-        "storage",
-        "infrastructure-as-code"
-    ],
-    "bugs": {
-        "url": "https://github.com/subhamay-bhattacharyya-tf/terraform-google-module-template/issues"
-    },
-    "homepage": "https://github.com/subhamay-bhattacharyya-tf/terraform-google-module-template#readme"
+  "name": "terraform-google-bigtable-instance",
+  "version": "1.0.0",
+  "description": "Terraform module for provisioning a Bigtable instance on GCP.",
+  "license": "MIT",
+  "scripts": {
+    "lint": "pre-commit run --all-files",
+    "tf:fmt": "terraform fmt -recursive",
+    "tf:validate": "terraform init -backend=false && terraform validate",
+    "release": "semantic-release"
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.1",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^12.0.6",
+    "@semantic-release/release-notes-generator": "^14.1.0",
+    "conventional-changelog-conventionalcommits": "^9.3.0",
+    "semantic-release": "^25.0.3"
+  },
+  "directories": {
+    "example": "examples"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/subhamay-bhattacharyya-tf/terraform-google-bigtable-instance"
+  },
+  "keywords": [
+    "terraform",
+    "gcp",
+    "bigtable",
+    "google-cloud-bigtable",
+    "iac"
+  ],
+  "bugs": {
+    "url": "https://github.com/subhamay-bhattacharyya-tf/terraform-google-bigtable-instance/issues"
+  },
+  "homepage": "https://github.com/subhamay-bhattacharyya-tf/terraform-google-bigtable-instance#readme"
 }

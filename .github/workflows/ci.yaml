@@ -69,7 +69,10 @@ jobs:
     strategy:
       matrix:
         example:
-          - examples/bucket/basic
+          - examples/bigtable/basic
+          - examples/bigtable/with-autoscaling
+          - examples/bigtable/multi-cluster
+          - examples/bigtable/deletion-protection
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -129,15 +132,51 @@ jobs:
           go mod download
         working-directory: test
 
-      - name: Run Terratest - GCS Bucket Basic
-        id: gcs-bucket-basic-test
+      - name: Run Terratest - Bigtable Basic
+        id: bigtable-basic-test
         run: |
           set -o pipefail
-          go test -v -timeout 30m -run TestGCSBucketBasic \
-            ./gcs_bucket_basic_test.go ./helpers_test.go 2>&1 | tee test_output.txt
-          echo "## GCS Bucket Basic Test Results" >> $GITHUB_STEP_SUMMARY
+          go test -v -timeout 30m -run TestBigtableBasic \
+            ./bigtable_basic_test.go ./helpers_test.go 2>&1 | tee test_basic_output.txt
+          echo "## Bigtable Basic Test Results" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          cat test_output.txt >> $GITHUB_STEP_SUMMARY
+          cat test_basic_output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        working-directory: test
+
+      - name: Run Terratest - Bigtable Autoscaling
+        id: bigtable-autoscaling-test
+        run: |
+          set -o pipefail
+          go test -v -timeout 30m -run TestBigtableAutoscaling \
+            ./bigtable_autoscaling_test.go ./helpers_test.go 2>&1 | tee test_autoscaling_output.txt
+          echo "## Bigtable Autoscaling Test Results" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat test_autoscaling_output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        working-directory: test
+
+      - name: Run Terratest - Bigtable Multi-Cluster
+        id: bigtable-multi-cluster-test
+        run: |
+          set -o pipefail
+          go test -v -timeout 30m -run TestBigtableMultiCluster \
+            ./bigtable_multi_cluster_test.go ./helpers_test.go 2>&1 | tee test_multi_cluster_output.txt
+          echo "## Bigtable Multi-Cluster Test Results" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat test_multi_cluster_output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        working-directory: test
+
+      - name: Run Terratest - Bigtable Deletion Protection
+        id: bigtable-deletion-protection-test
+        run: |
+          set -o pipefail
+          go test -v -timeout 30m -run TestBigtableDeletionProtection \
+            ./bigtable_deletion_protection_test.go ./helpers_test.go 2>&1 | tee test_deletion_protection_output.txt
+          echo "## Bigtable Deletion Protection Test Results" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat test_deletion_protection_output.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
         working-directory: test
 
