@@ -36,20 +36,22 @@ func TestBigtableDeletionProtection(t *testing.T) {
 
 	// Disable deletion protection before destroying to allow clean teardown
 	defer func() {
-		tfOptionsDestroy := &terraform.Options{
+		tfOptionsDisable := &terraform.Options{
 			TerraformDir: "../examples/bigtable/deletion-protection",
 			NoColor:      true,
 			Vars: map[string]interface{}{
-				"project_code": "tt",
-				"base_name":    baseName,
-				"environment":  "prod",
-				"region":       "us-central1",
+				"project_code":        "tt",
+				"base_name":           baseName,
+				"environment":         "prod",
+				"region":              "us-central1",
+				"deletion_protection": false,
 			},
 			EnvVars: map[string]string{
 				"GOOGLE_CLOUD_PROJECT": projectID,
 			},
 		}
-		terraform.Destroy(t, tfOptionsDestroy)
+		terraform.Apply(t, tfOptionsDisable)
+		terraform.Destroy(t, tfOptionsDisable)
 	}()
 
 	terraform.InitAndApply(t, tfOptions)

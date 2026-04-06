@@ -8,7 +8,7 @@ module "bigtable_deletion_protection" {
   bigtable_config = {
     base_name           = var.base_name
     instance_type       = "PRODUCTION"
-    deletion_protection = true
+    deletion_protection = var.deletion_protection
 
     cluster = [
       {
