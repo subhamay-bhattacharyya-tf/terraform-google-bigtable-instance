@@ -9,6 +9,13 @@ resource "google_bigtable_instance" "this" {
   deletion_protection = var.bigtable_config.deletion_protection
   labels              = var.bigtable_config.labels
 
+  lifecycle {
+    precondition {
+      condition     = length(local.instance_name) <= 30
+      error_message = "Constructed instance name '${local.instance_name}' is ${length(local.instance_name)} characters, exceeding the GCP limit of 30. Shorten base_name or project_code."
+    }
+  }
+
   dynamic "cluster" {
     for_each = var.bigtable_config.cluster
     content {

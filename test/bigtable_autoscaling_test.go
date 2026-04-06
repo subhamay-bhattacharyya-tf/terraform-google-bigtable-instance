@@ -1,7 +1,6 @@
 package test
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -17,7 +16,7 @@ func TestBigtableAutoscaling(t *testing.T) {
 
 	retrySleep := 10 * time.Second
 	unique := strings.ToLower(random.UniqueId())
-	baseName := fmt.Sprintf("autoscale-%s", unique)
+	baseName := unique
 	projectID := mustEnv(t, "GOOGLE_CLOUD_PROJECT")
 
 	tfOptions := &terraform.Options{
