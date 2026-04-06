@@ -186,6 +186,7 @@ terraform validate
 
 The Terratest job authenticates to GCP via [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation) (service account impersonation). If the job fails with `Permission 'iam.serviceAccounts.getAccessToken' denied`, grant the WIF pool principal the required IAM binding:
 
+
 ```bash
 gcloud iam service-accounts add-iam-policy-binding \
     "<service-account-email>" \
